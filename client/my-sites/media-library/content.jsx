@@ -240,7 +240,7 @@ class MediaLibraryContent extends React.Component {
 	}
 
 	needsToBeConnected() {
-		return ( this.props.source !== '' && ! this.props.isConnected );
+		return this.props.source !== '' && ! this.props.isConnected;
 	}
 
 	renderMediaList() {
@@ -285,7 +285,7 @@ class MediaLibraryContent extends React.Component {
 	}
 
 	renderHeader() {
-		if ( ! this.props.isConnected  && this.needsToBeConnected() ) {
+		if ( ! this.props.isConnected && this.needsToBeConnected() ) {
 			return null;
 		}
 
