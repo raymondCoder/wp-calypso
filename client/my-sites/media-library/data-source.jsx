@@ -76,6 +76,15 @@ export class MediaLibraryDataSource extends Component {
 				icon: <Gridicon icon="image" size={ 24 } />,
 			},
 		];
+		if ( config.isEnabled( 'external-stock-images' ) ) {
+			sources.push(
+				{
+					value: 'pexels',
+					label: translate( 'Stock images from Pexels' ),
+					icon: <Gridicon icon="add-image" size={ 24 } />,
+				}
+			);
+		}
 		const currentSelected = find( sources, item => item.value === source );
 		const classes = classnames( {
 			button: true,
