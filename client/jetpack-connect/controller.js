@@ -58,14 +58,13 @@ const removeSidebar = context => {
 	);
 };
 
-const jetpackNewSiteSelector = ( context, next ) => {
+const jetpackNewSiteSelector = context => {
 	removeSidebar( context );
 	context.primary = React.createElement( JetpackNewSite, {
 		path: context.path,
 		context: context,
 		locale: context.params.locale,
 	} );
-	next();
 };
 
 const getPlanSlugFromFlowType = ( type, interval = 'yearly' ) => {
@@ -109,9 +108,10 @@ export default {
 		next();
 	},
 
-	newSite( context ) {
+	newSite( context, next ) {
 		analytics.pageView.record( '/jetpack/new', 'Add a new site (Jetpack)' );
 		jetpackNewSiteSelector( context );
+		next();
 	},
 
 	connect( context, next ) {
