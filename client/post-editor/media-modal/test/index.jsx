@@ -47,8 +47,6 @@ jest.mock( 'lib/analytics', () => ( {
 jest.mock( 'lib/media/actions', () => ( {
 	delete: () => {},
 	setLibrarySelectedItems: () => {},
-	sourceChanged: () => {},
-	addExternal: () => {},
 } ) );
 jest.mock( 'lib/posts/actions', () => ( {
 	blockSave: () => {},
@@ -77,8 +75,6 @@ describe( 'EditorMediaModal', () => {
 	useSandbox( sandbox => {
 		spy = sandbox.spy();
 		sandbox.stub( mediaActions, 'setLibrarySelectedItems' );
-		sandbox.stub( mediaActions, 'sourceChanged' );
-		sandbox.stub( mediaActions, 'addExternal' );
 		deleteMedia = sandbox.stub( mediaActions, 'delete' );
 		onClose = sandbox.stub();
 	} );
@@ -353,7 +349,7 @@ describe( 'EditorMediaModal', () => {
 			).instance();
 
 			tree.setState( { source: 'external' } );
-			tree.copyExternal = onClose;
+			tree.copyExternalAfterLoadingWordPressLibrary = onClose;
 			tree.confirmSelection();
 
 			// EditorMediaModal will generate transient ID for the media selected
@@ -376,26 +372,20 @@ describe( 'EditorMediaModal', () => {
 					mediaLibrarySelectedItems={ SINGLE_ITEM_MEDIA }
 					view={ ModalViews.DETAIL }
 					setView={ spy }
-					onClose={ onClose }
 				/>
 			).instance();
 
 			tree.setState( { source: 'external' } );
+			tree.copyExternal = onClose;
 			tree.confirmSelection();
 
 			// EditorMediaModal will generate transient ID for the media selected
 			// by using uniqueId, which increments its value within the same session.
 			const transientItems = [
-				Object.assign( {}, SINGLE_ITEM_MEDIA[ 0 ], {
-					ID: 'media-3',
-					transient: true,
-					mime_type: 'image/jpeg',
-				} ),
+				Object.assign( {}, SINGLE_ITEM_MEDIA[ 0 ], { ID: 'media-3', transient: true } ),
 			];
-
 			process.nextTick( () => {
-				// external media copied, dialog closed
-				expect( onClose ).to.have.been.calledWith( { items: transientItems, type: 'media' } );
+				expect( onClose ).to.have.been.calledWith( transientItems, 'external' );
 				done();
 			} );
 		} );
@@ -411,7 +401,7 @@ describe( 'EditorMediaModal', () => {
 			).instance();
 
 			tree.setState( { source: 'external' } );
-			tree.copyExternal = onClose;
+			tree.copyExternalAfterLoadingWordPressLibrary = onClose;
 			tree.confirmSelection();
 
 			// EditorMediaModal will generate transient ID for the media selected
