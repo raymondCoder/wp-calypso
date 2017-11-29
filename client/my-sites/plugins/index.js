@@ -82,7 +82,16 @@ export default function() {
 		}
 
 		page(
-			'/plugins',
+			'/plugins/:category(featured|new|popular)?',
+			siteSelection,
+			navigation,
+			pluginsController.browsePlugins,
+			makeLayout,
+			clientRender
+		);
+
+		page(
+			'/plugins/:category(featured|new|popular)/:site',
 			siteSelection,
 			navigation,
 			pluginsController.browsePlugins,
@@ -95,8 +104,7 @@ export default function() {
 			siteSelection,
 			navigation,
 			ifSimpleSiteThenRedirectTo( '/plugins' ),
-			pluginsController.plugins,
-			sites,
+			pluginsController.pluginList,
 			makeLayout,
 			clientRender
 		);
@@ -106,8 +114,7 @@ export default function() {
 			siteSelection,
 			navigation,
 			pluginsController.jetpackCanUpdate,
-			pluginsController.plugins,
-			sites,
+			pluginsController.pluginList,
 			makeLayout,
 			clientRender
 		);
@@ -116,8 +123,7 @@ export default function() {
 			'/plugins/:plugin/:site_id?',
 			siteSelection,
 			navigation,
-			pluginsController.maybeBrowsePlugins,
-			pluginsController.plugin,
+			pluginsController.browsePluginsOrPlugin,
 			makeLayout,
 			clientRender
 		);
