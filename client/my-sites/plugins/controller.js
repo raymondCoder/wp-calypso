@@ -99,7 +99,7 @@ function renderPluginList( context, basePath ) {
 	analytics.pageView.record( baseAnalyticsPath, analyticsPageTitle );
 }
 
-function renderPluginsBrowser( context, next ) {
+function renderPluginsBrowser( context ) {
 	const searchTerm = context.query.s;
 	const site = getSelectedSite( context.store.getState() );
 	const { category } = context.params;
@@ -120,10 +120,9 @@ function renderPluginsBrowser( context, next ) {
 		category,
 		search: searchTerm,
 	} );
-	next();
 }
 
-function renderPluginWarnings( context, next ) {
+function renderPluginWarnings( context ) {
 	const state = context.store.getState();
 	const site = getSelectedSite( state );
 	const pluginSlug = decodeURIComponent( context.params.plugin );
@@ -132,10 +131,9 @@ function renderPluginWarnings( context, next ) {
 		siteSlug: site.slug,
 		pluginSlug,
 	} );
-	next();
 }
 
-function renderProvisionPlugins( context, next ) {
+function renderProvisionPlugins( context ) {
 	const state = context.store.getState();
 	const section = getSection( state );
 	const site = getSelectedSite( state );
@@ -150,7 +148,6 @@ function renderProvisionPlugins( context, next ) {
 	context.primary = React.createElement( PlanSetup, {
 		whitelist: context.query.only || false,
 	} );
-	next();
 }
 
 const controller = {
@@ -167,32 +164,35 @@ const controller = {
 		context.params.pluginFilter = filter;
 		notices.clearNotices( 'notices' );
 		renderPluginList( context, basePath );
+		next();
 	},
 
-	plugin( context ) {
+	plugin( context, next ) {
 		const siteUrl = route.getSiteFragment( context.path );
 
 		notices.clearNotices( 'notices' );
 		renderSinglePlugin( context, siteUrl );
+		next();
 	},
 
 	// The plugin browser can be rendered by the `/plugins/:plugin/:site_id?` route.
 	// If the "plugin" part of the route is actually a site,
 	// render the plugin browser for that site. Otherwise render plugin.
-	browsePluginsOrPlugin( context ) {
+	browsePluginsOrPlugin( context, next ) {
 		const siteUrl = route.getSiteFragment( context.path );
 		const { plugin } = context.params;
 
 		if ( plugin && siteUrl && plugin === siteUrl.toString() ) {
-			controller.browsePlugins( context );
+			controller.browsePlugins( context, next );
 			return;
 		}
 
-		controller.plugin( context );
+		controller.plugin( context, next );
 	},
 
-	browsePlugins( context ) {
+	browsePlugins( context, next ) {
 		renderPluginsBrowser( context );
+		next();
 	},
 
 	upload( context, next ) {
@@ -221,12 +221,14 @@ const controller = {
 		next();
 	},
 
-	setupPlugins( context ) {
+	setupPlugins( context, next ) {
 		renderProvisionPlugins( context );
+		next();
 	},
 
-	eligibility( context ) {
+	eligibility( context, next ) {
 		renderPluginWarnings( context );
+		next();
 	},
 
 	resetHistory() {
