@@ -522,7 +522,7 @@ export class EditorHtmlToolbar extends Component {
 						onClick={ this.openPexelsModal }
 					>
 						<Gridicon icon="add-image" />
-						<span data-e2e-insert-type="pexels">{ translate( 'Stock images from Pexels' ) }</span>
+						<span data-e2e-insert-type="pexels">{ translate( 'Free photo library' ) }</span>
 					</div>
 				) }
 

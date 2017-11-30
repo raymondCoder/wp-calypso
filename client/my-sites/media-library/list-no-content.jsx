@@ -33,7 +33,7 @@ class MediaLibraryListNoContent extends Component {
 		}
 
 		if ( 'pexels' === source ) {
-			return translate( 'Use the search above to find stock images!', {
+			return translate( 'Use the search above to find free photos!', {
 				comment: 'Media no results',
 			} );
 		}

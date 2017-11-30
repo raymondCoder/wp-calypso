@@ -55,7 +55,7 @@ export class MediaLibraryFilterBar extends Component {
 		}
 
 		if ( 'pexels' === source ) {
-			return translate( 'Search stock images from Pexels…' );
+			return translate( 'Search for free photos…' );
 		}
 
 		switch ( filter ) {

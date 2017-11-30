@@ -50,7 +50,7 @@ if ( config.isEnabled( 'external-media' ) ) {
 			item: (
 				<GridiconButton
 					icon="add-image"
-					label={ i18n.translate( 'Stock images from Pexels' ) }
+					label={ i18n.translate( 'Free photo library' ) }
 					e2e="stock-media-pexels"
 				/>
 			),

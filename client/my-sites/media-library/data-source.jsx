@@ -77,13 +77,11 @@ export class MediaLibraryDataSource extends Component {
 			},
 		];
 		if ( config.isEnabled( 'external-stock-images' ) ) {
-			sources.push(
-				{
-					value: 'pexels',
-					label: translate( 'Stock images from Pexels' ),
-					icon: <Gridicon icon="add-image" size={ 24 } />,
-				}
-			);
+			sources.push( {
+				value: 'pexels',
+				label: translate( 'Free photo library' ),
+				icon: <Gridicon icon="add-image" size={ 24 } />,
+			} );
 		}
 		const currentSelected = find( sources, item => item.value === source );
 		const classes = classnames( {
