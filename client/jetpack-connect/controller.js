@@ -26,10 +26,12 @@ import PlansLanding from './plans-landing';
 import route from 'lib/route';
 import userFactory from 'lib/user';
 import { authorizeQueryDataSchema } from './schema';
+import { authQueryTransformer } from './utils';
 import { JETPACK_CONNECT_QUERY_SET } from 'state/action-types';
 import { renderWithReduxStore } from 'lib/react-helpers';
 import { setDocumentHeadTitle as setTitle } from 'state/document-head/actions';
 import { setSection } from 'state/ui/actions';
+import { storePlan } from './persistence-utils';
 import {
 	PLAN_JETPACK_PREMIUM,
 	PLAN_JETPACK_PERSONAL,
@@ -38,7 +40,6 @@ import {
 	PLAN_JETPACK_PERSONAL_MONTHLY,
 	PLAN_JETPACK_BUSINESS_MONTHLY,
 } from 'lib/plans/constants';
-import { storePlan } from './persistence-utils';
 
 /**
  * Module variables
@@ -96,44 +97,6 @@ const getPlanSlugFromFlowType = ( type, interval = 'yearly' ) => {
 	return get( planSlugs, [ interval, type ], '' );
 };
 
-function parseQueryOrFail( context, next ) {
-	const queryObject = context.query;
-
-	// warn( 'state validation failed for state:', state, 'with reason:', validate.errors );
-	const validQueryObject = validateQueryObject( queryObject );
-
-	if ( validQueryObject ) {
-		debug( 'set initial query object', queryObject );
-		context.store.dispatch( {
-			type: JETPACK_CONNECT_QUERY_SET,
-			queryObject: context.query,
-		} );
-
-		//
-		// Prunes ?query=string
-		// Previous multi-step first saves queryObject, then `page.redirect`s
-		// without query, falling through to other route handler
-		//
-		// Not really compatible with this approach :/
-		//
-		// page.redirect( context.pathname );
-
-		removeSidebar( context );
-
-		const analyticsBasePath = 'jetpack/connect/authorize';
-		const analyticsPageTitle = 'Jetpack Authorize';
-
-		analytics.pageView.record( analyticsBasePath, analyticsPageTitle );
-	} else {
-		return renderWithReduxStore(
-			<NoDirectAccessError />,
-			document.getElementById( 'primary' ),
-			context.store
-		);
-	}
-	return next();
-}
-
 export default {
 	redirectWithoutLocaleifLoggedIn( context, next ) {
 		if ( userModule.get() && i18nUtils.getLocaleFromPath( context.path ) ) {
@@ -181,24 +144,71 @@ export default {
 	},
 
 	authorizeForm( context ) {
-		const analyticsBasePath = 'jetpack/connect/authorize',
-			analyticsPageTitle = 'Jetpack Authorize';
+		const queryObject = context.query;
 
 		removeSidebar( context );
 
-		let interval = context.params.interval;
-		let locale = context.params.locale;
-		if ( context.params.localeOrInterval ) {
-			if ( [ 'monthly', 'yearly' ].indexOf( context.params.localeOrInterval ) >= 0 ) {
-				interval = context.params.localeOrInterval;
-			} else {
-				locale = context.params.localeOrInterval;
-			}
-		}
+		const analyticsBasePath = 'jetpack/connect/authorize';
+		const analyticsPageTitle = 'Jetpack Authorize';
 
 		analytics.pageView.record( analyticsBasePath, analyticsPageTitle );
-		renderWithReduxStore(
-			<JetpackConnectAuthorizeForm path={ context.path } interval={ interval } locale={ locale } />,
+
+		// warn( 'state validation failed for state:', state, 'with reason:', validate.errors );
+		const validQueryObject = validateQueryObject( queryObject );
+
+		if ( validQueryObject ) {
+			const transformedQuery = authQueryTransformer( queryObject );
+			// No longer setting/persisting queryObject
+			// However, from is required for some reducer logic :(
+			// FIXME
+			context.store.dispatch( {
+				type: JETPACK_CONNECT_QUERY_SET,
+				queryObject: { from: context.query.from },
+			} );
+
+			analytics.pageView.record( analyticsBasePath, analyticsPageTitle );
+
+			let interval = context.params.interval;
+			let locale = context.params.locale;
+			if ( context.params.localeOrInterval ) {
+				if ( [ 'monthly', 'yearly' ].indexOf( context.params.localeOrInterval ) >= 0 ) {
+					interval = context.params.localeOrInterval;
+				} else {
+					locale = context.params.localeOrInterval;
+				}
+			}
+			return renderWithReduxStore(
+				<JetpackConnectAuthorizeForm
+					path={ context.path }
+					interval={ interval }
+					locale={ locale }
+					authAlreadyAuthorized={ transformedQuery.authAlreadyAuthorized }
+					authBlogname={ transformedQuery.authBlogname }
+					authClientId={ transformedQuery.authClientId }
+					authFrom={ transformedQuery.authFrom }
+					authHomeUrl={ transformedQuery.authHomeUrl }
+					authJpVersion={ transformedQuery.authJpVersion }
+					authNewUserStartedConnection={ transformedQuery.authNewUserStartedConnection }
+					authNonce={ transformedQuery.authNonce }
+					authPartnerId={ transformedQuery.authPartnerId }
+					authRedirectAfterAuth={ transformedQuery.authRedirectAfterAuth }
+					authRedirectUri={ transformedQuery.authRedirectUri }
+					authScope={ transformedQuery.authScope }
+					authSecret={ transformedQuery.authSecret }
+					authSite={ transformedQuery.authSite }
+					authSiteIcon={ transformedQuery.authSiteIcon }
+					authSiteUrl={ transformedQuery.authSiteUrl }
+					authState={ transformedQuery.authState }
+					authTracksUi={ transformedQuery.authTracksUi }
+					authTracksUt={ transformedQuery.authTracksUt }
+					authUserEmail={ transformedQuery.authUserEmail }
+				/>,
+				document.getElementById( 'primary' ),
+				context.store
+			);
+		}
+		return renderWithReduxStore(
+			<NoDirectAccessError />,
 			document.getElementById( 'primary' ),
 			context.store
 		);
@@ -278,5 +288,4 @@ export default {
 			context.store
 		);
 	},
-	parseQueryOrFail,
 };
