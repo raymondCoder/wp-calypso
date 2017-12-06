@@ -227,6 +227,11 @@ export default {
 		const analyticsPageTitle = 'Plans';
 		const basePath = route.sectionify( context.path );
 		const analyticsBasePath = basePath + '/:site';
+		const loggedOut = ! userModule.get();
+
+		if ( loggedOut && context.params.site ) {
+			return page.redirect( `/log-in?redirect_to=${ context.path }` );
+		}
 
 		removeSidebar( context );
 

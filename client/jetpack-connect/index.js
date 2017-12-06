@@ -9,8 +9,12 @@ import page from 'page';
  */
 import controller from './controller';
 import { siteSelection } from 'my-sites/controller';
+import userFactory from 'lib/user';
 
 export default function() {
+	const user = userFactory();
+	const isLoggedOut = ! user.get();
+
 	page(
 		'/jetpack/connect/:type(personal|premium|pro)/:interval(yearly|monthly)?',
 		controller.connect
@@ -45,8 +49,13 @@ export default function() {
 	);
 
 	page( '/jetpack/connect/plans', '/jetpack/connect/store' );
-	page( '/jetpack/connect/plans/:site', siteSelection, controller.plansSelection );
-	page( '/jetpack/connect/plans/:interval/:site', siteSelection, controller.plansSelection );
+	if ( isLoggedOut ) {
+		page( '/jetpack/connect/plans/:site', controller.plansSelection );
+		page( '/jetpack/connect/plans/:interval/:site', controller.plansSelection );
+	} else {
+		page( '/jetpack/connect/plans/:site', siteSelection, controller.plansSelection );
+		page( '/jetpack/connect/plans/:interval/:site', siteSelection, controller.plansSelection );
+	}
 
 	page(
 		'/jetpack/connect/:locale?',
